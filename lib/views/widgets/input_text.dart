@@ -8,8 +8,19 @@ class InputText extends StatefulWidget {
   final bool border;
   final bool password;
   final TextInputType keyboardType;
+  final int maxLines;
 
-  InputText({Key key, this.label, this.placeholder, this.defaultValue, this.onChange, this.border = true, this.password = false, this.keyboardType = TextInputType.text}) : super(key: key);
+  InputText(
+      {Key key,
+      this.label,
+      this.placeholder,
+      this.defaultValue,
+      this.onChange,
+      this.border = true,
+      this.password = false,
+      this.maxLines,
+      this.keyboardType = TextInputType.text})
+      : super(key: key);
 
   @override
   _InputTextState createState() => _InputTextState();
