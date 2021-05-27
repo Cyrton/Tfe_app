@@ -56,8 +56,8 @@ class _PlaceViewViewState extends State<PlaceView> {
     if (mounted) {
       setState(() {
         _place = data['place'];
-        numberOfApproval =
-            int.parse(data['place']['numberOfApproval']['\$numberInt']);
+        //numberOfApproval =
+            //int.parse(data['place']['numberOfApproval']['\$numberInt']);
         loading = false;
       });
     }
