@@ -4,34 +4,17 @@ import 'package:carcassonne/views/widgets/app_inkwell.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:carcassonne/views/widgets/comment_widget.dart';
 import 'package:carcassonne/views/widgets/auth_widget.dart';
+import 'package:carcassonne/views/widgets/comment_widget.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+
 import 'package:carcassonne/views/widgets/loading_widget.dart';
 import 'package:carcassonne/net/place_api.dart';
+import 'package:carcassonne/net/comment_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:carcassonne/net/user_api.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-
-var fakeComments = [
-  {
-    "picture":
-        "https://upload.wikimedia.org/wikipedia/commons/a/a0/Pierre-Person.jpg",
-    "name": "Pierre",
-    "comment": "Super grec pour manger avec c\'est pote",
-  },
-  {
-    "picture":
-        "https://upload.wikimedia.org/wikipedia/commons/a/a0/Pierre-Person.jpg",
-    "name": "Pierre",
-    "comment": "Super grec pour manger avec c\'est pote",
-  },
-  {
-    "picture":
-        "https://upload.wikimedia.org/wikipedia/commons/a/a0/Pierre-Person.jpg",
-    "name": "Pierre",
-    "comment": "Super grec pour manger avec c\'est pote",
-  }
-];
 
 class PlaceView extends StatefulWidget {
   final String id;
@@ -42,22 +25,23 @@ class PlaceView extends StatefulWidget {
 }
 
 class _PlaceViewViewState extends State<PlaceView> {
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  bool isLogin = false;
   bool isApprove = false;
   int numberOfApproval = 0;
   bool loading = false;
+  List<dynamic> _comments = [];
   Map<String, dynamic> _place = null;
 
-    void _setApproval() async {
+  void _setApproval() async {
     final SharedPreferences prefs = await _prefs;
 
     final token = prefs.getString('googlePYMP');
 
     Map<String, dynamic> payload = JwtDecoder.decode(token);
 
-    print('isApprove ${_place['_id']}');
-    await CarcassonneUserApi.updateApproval(
-        payload['_id'], _place['_id']['\$oid']);
-    print('NEW APPROVAL =>');
+    await CarcassonneUserApi.updateApproval(payload['_id'], _place['_id']);
     setState(() {
       isApprove = !isApprove;
     });
@@ -74,20 +58,21 @@ class _PlaceViewViewState extends State<PlaceView> {
     }
   }
 
-
   void fetchPlace(context) async {
     if (mounted) {
       setState(() {
         loading = true;
       });
     }
-    var data = await CarcassonnePlaceApi.getPlaceById(widget.placeId);
+    var place = await CarcassonnePlaceApi.getPlaceById(widget.placeId);
+    var comments =
+        await CarcassonneCommentApi.getCommentByPlace(widget.placeId);
     if (mounted) {
       setState(() {
-        _place = data['place'];
-        numberOfApproval =
-            int.parse(data['place']['numberOfApproval']['\$numberLong']);
+        _place = place;
+        numberOfApproval = place['numberOfApproval'];
         loading = false;
+        _comments = comments;
       });
     }
   }
@@ -95,7 +80,6 @@ class _PlaceViewViewState extends State<PlaceView> {
   @override
   void initState() {
     new Future.delayed(Duration.zero, () async {
-      //TODO mon applle a la base de donner
       fetchPlace(context);
       await _checkLocalStorage(context);
     });
@@ -105,245 +89,224 @@ class _PlaceViewViewState extends State<PlaceView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppBar(title: 'Place'),
-        body: SingleChildScrollView(
-            child: Column(children: [
-          if (loading == true) LoadingAnnimation(),
-          if (_place != null)
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        alignment: Alignment(-.2, 0),
-                        image: NetworkImage(_place['image']),
-                        fit: BoxFit.cover),
-                  ),
-                  child: Container(
-                      height: 200,
-                      width: double.infinity,
-                      decoration: new BoxDecoration(
-                        gradient: new LinearGradient(
-                            colors: [Colors.transparent, Colors.black],
-                            begin: const FractionalOffset(.1, .4),
-                            end: const FractionalOffset(.1, 1),
-                            stops: [0.0, 1.0],
-                            tileMode: TileMode.clamp),
-                      ),
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(_place['name'],
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    height: 3,
-                                    fontSize: 20)),
-                            CustomInkWell(
-                                onTap: () {
-                                  MapsLauncher.launchQuery(_place['address']);
-                                },
-                                child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(_place['address'],
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontStyle: FontStyle.italic,
-                                              fontSize: 14)),
-                                      Container(
-                                        alignment: Alignment.topLeft,
-                                        child: Icon(Icons.location_on,
-                                            size: 30, color: Color(0xffab9bd9)),
-                                      ),
-                                    ]))
-                          ]))),
-              Padding(
-                  padding: EdgeInsets.all(10),
-                  child: MarkdownBody(
-                    data: _place['description'],
-                    extensionSet: md.ExtensionSet.gitHubWeb,
-                  )),
-              Padding(
-                  padding: EdgeInsets.all(10),
-                  child: MarkdownBody(
-                    data: _place['more_info_1'],
-                    extensionSet: md.ExtensionSet.gitHubWeb,
-                  )),
-              Padding(
-                  padding: EdgeInsets.all(10),
-                  child: MarkdownBody(
-                    data: _place['more_info_2'],
-                    extensionSet: md.ExtensionSet.gitHubWeb,
-                  )),
-              Padding(
-                  padding: EdgeInsets.all(10),
-                  child: MarkdownBody(
-                    data: _place['more_info_3'],
-                    extensionSet: md.ExtensionSet.gitHubWeb,
-                  )),
-              Divider(),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              CustomInkWell(
-                    onTap: isLogin == false
-                        ? () {
-                            showMaterialModalBottomSheet(
-                                backgroundColor: Colors.transparent,
-                                context: context,
-                                expand: false,
-                                builder: (context) => AuthWidget(
-                                      onValidate: () {
-                                        // _showDialog(context);
-                                      },
-                                    ));
-                          }
-                        : () {
-                            _setApproval();
-                          },
+        body: Stack(children: [
+          Container(decoration: new BoxDecoration(color: Color(0xff101519))),
+          SingleChildScrollView(
+              child: Column(children: [
+            if (loading == true) LoadingAnnimation(),
+            if (_place != null)
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                          alignment: Alignment(-.2, 0),
+                          image: NetworkImage(_place['image']['url']),
+                          fit: BoxFit.cover),
+                    ),
                     child: Container(
-                        width: 150,
-                        margin: EdgeInsets.all(10),
-                        child: Row(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: new BoxDecoration(
+                          gradient: new LinearGradient(
+                              colors: [Colors.transparent, Colors.black],
+                              begin: const FractionalOffset(.1, .4),
+                              end: const FractionalOffset(.1, 1),
+                              stops: [0.0, 1.0],
+                              tileMode: TileMode.clamp),
+                        ),
+                        padding: EdgeInsets.only(bottom: 10),
+                        child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Icon(Icons.check_circle,
-                                  size: 20,
-                                  color: !isApprove
-                                      ? Colors.grey.shade600
-                                      : Colors.green),
-                              Padding(
-                                  padding: EdgeInsets.only(left: 10),
-                                  child: Text('Approuver',
-                                      style: TextStyle(
-                                          color: Colors.grey.shade600))),
+                              Text(_place['name'],
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      height: 3,
+                                      fontSize: 20)),
+                              CustomInkWell(
+                                  onTap: () {
+                                    MapsLauncher.launchQuery(_place['address']);
+                                  },
+                                  child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(_place['address'],
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 14)),
+                                        Container(
+                                          alignment: Alignment.topLeft,
+                                          child: Icon(Icons.location_on,
+                                              size: 30,
+                                              color: Color(0xfff6ac65)),
+                                        ),
+                                      ]))
                             ]))),
-                Text('|'),
-                CustomInkWell(
-                    onTap: isLogin == false
-                        ? () {
-                            showMaterialModalBottomSheet(
-                                backgroundColor: Colors.transparent,
-                                context: context,
-                                expand: false,
-                                builder: (context) => AuthWidget(
-                                      onValidate: () {
-                                        // _showDialog(context);
-                                      },
-                                    ));
-                          }
-                        : () {
-                               showMaterialModalBottomSheet(
-                                backgroundColor: Colors.transparent,
-                                context: context,
-                                expand: false,
-                                builder: (context) => CommentWidget(
-                                      onValidate: () {
-                                        // _showDialog(context);
-                                      },
-                                    ));
-                          },
-                    child:
-                Container(                 
-                    width: 150,
-                    margin: EdgeInsets.all(10),
-                    child: Row(children: [
-                      Icon(Icons.chat_bubble_outline,
-                          size: 20, color: Colors.grey.shade600),
-                      Padding(
-                          padding: EdgeInsets.only(left: 10),
-                          child: Text('Commenter',
-                              style: TextStyle(color: Colors.grey.shade600))),
-                    ])))
-              ]),
-              ...fakeComments.map((comment) {
-                return (
-                  Container(
-                    margin: EdgeInsets.all(10),
+                Padding(
                     padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-      // border: Border.all(color: Color(0xffC4C4C4)),
-      color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(5.0)),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.5),
-          spreadRadius: 2,
-          blurRadius: 2,
-          offset: Offset(0, 3), // changes position of shadow
-        ),
-      ],
-    ),
-                    child:
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    child: MarkdownBody(
+                      data: _place['description'] ?? '',
+                      extensionSet: md.ExtensionSet.gitHubWeb,
+                      styleSheet:
+                          MarkdownStyleSheet.fromTheme(Theme.of(context))
+                              .copyWith(
+                                  p: TextStyle(color: Colors.white),
+                                  checkbox: TextStyle(color: Colors.white),
+                                  blockquote: TextStyle(color: Colors.white),
+                                  tableBody: TextStyle(color: Colors.white),
+                                  h1: TextStyle(color: Colors.white),
+                                  h2: TextStyle(color: Colors.white),
+                                  h3: TextStyle(color: Colors.white),
+                                  h4: TextStyle(color: Colors.white),
+                                  h5: TextStyle(color: Colors.white),
+                                  h6: TextStyle(color: Colors.white),
+                                  listBullet: TextStyle(color: Colors.white)),
+                    )),
+                Divider(),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                    CircleAvatar(
-                      radius: 30.0,
-                      backgroundImage: NetworkImage(comment['picture'])),
-                    Container(
-                      height: 60,
-                    margin: EdgeInsets.only(left: 20),
-                    child:
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      Text(comment['name'],
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                      CustomInkWell(
+                          onTap: isLogin == false
+                              ? () {
+                                  showMaterialModalBottomSheet(
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      expand: false,
+                                      builder: (context) => AuthWidget(
+                                            onValidate: () {
+                                              _checkLocalStorage(context);
+                                            },
+                                          ));
+                                }
+                              : () {
+                                  _setApproval();
+                                },
+                          child: Container(
+                              width: 150,
+                              margin: EdgeInsets.all(10),
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(Icons.check_circle,
+                                        size: 20,
+                                        color: !isApprove
+                                            ? Colors.white
+                                            : Colors.green),
+                                    Padding(
+                                        padding: EdgeInsets.only(left: 10),
+                                        child: Text('Approuver',
+                                            style: TextStyle(
+                                                color: Colors.white))),
+                                  ]))),
+                      Text('|'),
+                      CustomInkWell(
+                          onTap: isLogin == false
+                              ? () {
+                                  showMaterialModalBottomSheet(
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      expand: false,
+                                      builder: (context) => AuthWidget(
+                                            onValidate: () {
+                                              _checkLocalStorage(context);
+                                            },
+                                          ));
+                                }
+                              : () {
+                                  showMaterialModalBottomSheet(
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      expand: false,
+                                      builder: (context) => CommentWidget(
+                                            onValidate: (comment) {
+                                              _comments.insert(0 ,comment);
+
+                                              setState(() {
+                                                _comments = _comments;
+                                              });
+                                              // _showDialog(context);
+                                            },
+                                            placeId: widget.placeId,
+                                          ));
+                                },
+                          child: Container(
+                              width: 150,
+                              margin: EdgeInsets.all(10),
+                              child: Row(children: [
+                                Icon(Icons.chat_bubble_outline,
+                                    size: 20, color: Colors.white),
+                                Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                    child: Text('Commenter',
+                                        style: TextStyle(color: Colors.white))),
+                              ])))
+                    ]),
+                Divider(color: Colors.white),
+                ..._comments.map((comment) {
+                  return (Container(
+                      margin: EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Color(0xff101519),
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       ),
-                      Text(comment['comment'])
-                    ],))
-
-                  ],))
-
-                );
-              }).toList()
-            ])
-        ])));
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                          CircleAvatar(
+                              radius: 20.0,
+                              backgroundImage:
+                                  NetworkImage(comment['app_user']['picture'])),
+                          Padding(padding: EdgeInsets.only(top: 10),
+                          child: 
+                          Text(comment['app_user']['name'],
+                           style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white) )
+                          )]),
+                          VerticalDivider(
+                            color: Colors.red,
+                            thickness: 1,
+                          ),
+                          Container(
+                              margin: EdgeInsets.only(left: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(comment['title'],
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  // Divider(color: Colors.red,
+                                  //    thickness: 1.0,
+                                  // ),
+                                  Container(
+                                    width: 225,
+                                    child:
+                                Text(comment['description'],
+                                      maxLines: 20,
+                                    
+                                      style: TextStyle(color: Colors.white))
+                                  )],
+                              ))
+                        ],
+                      )));
+                }).toList()
+              ])
+          ]))
+        ]));
   }
 }
-
-//  CustomInkWell(
-//               onTap: () {
-//                 setState(() {
-//                   isApprove = !isApprove;
-//                   numberOfApproval = !isApprove
-//                       ? numberOfApproval - 1
-//                       : numberOfApproval + 1;
-//                 });
-//               },
-//               child: Container(
-//                   width: 100,
-//                   padding: EdgeInsets.all(5),
-//                   decoration: BoxDecoration(
-//                     color:
-//                         !isApprove ? Colors.grey.shade300 : Color(0xffab9bd9),
-//                     borderRadius: BorderRadius.all(Radius.circular(5.0)),
-//                     boxShadow: [
-//                       BoxShadow(
-//                         color: Colors.grey.withOpacity(0.5),
-//                         spreadRadius: 2,
-//                         blurRadius: 2,
-//                         offset: Offset(0, 3), // changes position of shadow
-//                       ),
-//                     ],
-//                   ),
-//                   margin: EdgeInsets.fromLTRB(10, 5, 10, 5),
-//                   child: Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                       children: [
-
-//                         Icon(Icons.check_circle,
-//                             size: 20,
-//                             color: !isApprove
-//                                 ? Colors.grey.shade600
-//                                 : Colors.black),
-//                                        Text('Approve',
-//                             style: TextStyle(
-//                                 color: !isApprove
-//                                     ? Colors.grey.shade600
-//                                     : Colors.black))
-//                       ])))
