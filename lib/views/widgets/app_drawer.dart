@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carcassonne/router.dart';
 import 'package:fluro/fluro.dart';
-import 'package:carcassonne/views/widgets/app_inkwell.dart';
-
-var fakeCity = {
-  'image':
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Nivelles2011.JPG/280px-Nivelles2011.JPG',
-  'name': 'Nivelles',
-  'description':
-      'Nivelles (en néerlandais Nijvel, en wallon Nivele) est une ville francophone de Belgique située en Région wallonne dans la province du Brabant wallon, chef-lieu de l\'arrondissement administratif et judiciaire de Nivelles.',
-  'population': 28521,
-  'type': 'small',
-  'countryCode': 'BR',
-};
+import 'package:carcassonne/views/widgets/app_flat_button.dart';
+import 'package:provider/provider.dart';
+import 'package:carcassonne/models/city_model.dart';
 
 class CustomAppDrawer extends StatefulWidget {
   final String dateToGet;
@@ -26,73 +17,84 @@ class _CustomAppDrawerState extends State<CustomAppDrawer> {
   String picture;
   bool isSubscribe = false;
 
+  Map<String, dynamic> _citie = null;
+
+
+
   @override
   void initState() {
     super.initState();
     new Future.delayed(Duration.zero, () async {
-      if (mounted) {
-        setState(() {
-          picture = fakeCity['image'];
-          name = fakeCity['name'];
-        });
-      }
+
+        if (mounted) {
+    var cityModel = Provider.of<CityModel>(context, listen: false);
+
+      setState(() {
+          picture = cityModel.url;
+          name = cityModel.name;
+      });
+    }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      child: Container(
+        color: Color(0xff101519),
         child: Column(children: [
       Container(
         height: 125,
         child: DrawerHeader(
             decoration: BoxDecoration(
-              color: Color(0xfff2f2f2),
+              color: Colors.black,
+              image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.7), BlendMode.dstATop),
+                image: NetworkImage(picture ?? 'assets/image_loading.gif'),
+                fit: BoxFit.cover),
+    //  borderRadius: BorderRadius.only(
+    //     bottomRight: Radius.circular(40),
+    //   ),
+
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (picture != null)
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(picture),
-                    minRadius: 30,
-                    maxRadius: 30,
-                  ),
                 if (name != null)
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      
+                      padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
+                            width: 170,
                             child: Text(
                               name,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: Colors.black,
-                                // fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                color: Colors.white,
+                                fontSize: 20,
                               ),
                             ),
                           ),
-                          CustomInkWell(
-                            child: Padding(
-                            padding: EdgeInsets.only(top: 5),
-                            child: Text(
-                              'Voir la ville',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 14,
-                              ),
-                            )),
-                            onTap: () {
-                                      AppRouter.router.navigateTo(context, 'city/info',
-                replace: false, transition: TransitionType.inFromRight);
-                            },
-                          )
+                           CustomFlatButton(
+        loadingColor: Colors.white,
+        color: Colors.transparent,
+        borderWidth: 2,
+        borderColor: Colors.white,
+        textColor: Colors.white,
+        onPressed: () {
+           AppRouter.router.navigateTo(context, 'city/info',
+                                  replace: false,
+                                  transition: TransitionType.inFromRight);
+        },
+        fontSize: 12,
+        label: 'Voir la ville',
+      ),
+          
                         ],
                       ),
                     ),
@@ -102,11 +104,27 @@ class _CustomAppDrawerState extends State<CustomAppDrawer> {
       ),
       ListTile(
           onTap: () {
+            AppRouter.router.navigateTo(context, 'calendar',
+                replace: false, transition: TransitionType.inFromRight);
+          },
+          leading: Icon(Icons.calendar_today, color: Color(0xfff6ac65)),
+          title: Text('Calendar', style: TextStyle(color: Colors.white))),
+          ListTile(
+          onTap: () {
+            AppRouter.router.navigateTo(context, 'meet',
+                replace: false, transition: TransitionType.inFromRight);
+          },
+          leading: Icon(Icons.people, color: Color(0xfff6ac65)),
+          title: Text('Rencontre', style: TextStyle(color: Colors.white))),
+      Expanded(child: Container()),
+      Divider(),
+      ListTile(
+          onTap: () {
             AppRouter.router.navigateTo(context, 'city',
                 replace: true, transition: TransitionType.inFromLeft);
           },
-          leading: Icon(Icons.swap_calls),
-          title: Text('Changer de ville')),
-    ]));
+          leading: Icon(Icons.swap_calls, color: Color(0xfff6ac65)),
+          title: Text('Changer de ville', style: TextStyle(color: Colors.white))),
+    ])));
   }
 }

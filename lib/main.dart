@@ -21,7 +21,7 @@ void main(List<String> args, {String env}) async {
   WidgetsFlutterBinding.ensureInitialized();
   final FlutterI18nDelegate flutterI18nDelegate = FlutterI18nDelegate(
     translationLoader: NamespaceFileTranslationLoader(
-      namespaces: ['common', 'exercise','meal'],
+      namespaces: ['common'],
       useCountryCode: false,
       fallbackDir: 'en',
       basePath: 'assets/i18n',
@@ -67,8 +67,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         navigatorObservers: <NavigatorObserver>[observer],
         color: Color.fromARGB(255, 255, 255, 255),
-        title: 'O-plums',
-        initialRoute: 'city',
+        title: 'Carcassonne',
+        initialRoute: 'splash',
         theme: ThemeData(
             textTheme:
               GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)),
