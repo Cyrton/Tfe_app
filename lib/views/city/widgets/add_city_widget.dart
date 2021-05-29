@@ -24,16 +24,16 @@ class _AddCityWidgetState extends State<AddCityWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Colors.white,
+        color: Color(0xff101519),
         height: 500,
         child: SingleChildScrollView(
             child: Column(children: [
                   Container(
                   margin: EdgeInsets.only(top: 20, bottom: 20),
                   child: Text(
-                    'Formulaire de contacte',
+                    'Formulaire de contact',
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
           Container(
             width: 300,
@@ -56,7 +56,7 @@ class _AddCityWidgetState extends State<AddCityWidget> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.grey)),
             child: InputText(
-              placeholder: 'Role dans la ville',
+              placeholder: 'Rôle dans la ville',
               border: false,
               onChange: (value) => _handleChange('cityJob', value),
             ),
@@ -69,18 +69,18 @@ class _AddCityWidgetState extends State<AddCityWidget> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.grey)),
             child: InputText(
-              placeholder: 'Email de contacte',
+              placeholder: 'Email de contact',
               border: false,
               onChange: (value) => _handleChange('contactEmail', value),
             ),
           ),
           CustomFlatButton(
             label: 'Envoyer',
-            color: Color(0xffab9bd9),
+            textColor: Colors.black,
+            color: Colors.white,
             onPressed: () {
               Navigator.pop(context);
               widget.onValidate();
-
             },
             width: 300,
           ),

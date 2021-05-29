@@ -39,20 +39,24 @@ class _InputTextState extends State<InputText> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.label != null) (
-            Text(widget.label, style: TextStyle(fontSize: 16))
-        ),
+        if (widget.label != null)
+          (Text(widget.label, style: TextStyle(fontSize: 16, color: Colors.white))),
         TextField(
           onChanged: widget.onChange,
           controller: _controller,
           decoration: InputDecoration(
-              hintText: widget.placeholder,
-              border: widget.border ? UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)) : InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white),
+            hintText: widget.placeholder,
+            border: widget.border
+                ? UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white))
+                : InputBorder.none,
           ),
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
           obscureText: widget.password,
           enableSuggestions: widget.password,
           autocorrect: widget.password,
+          maxLines: widget.maxLines,
           keyboardType: widget.keyboardType,
         )
       ],
