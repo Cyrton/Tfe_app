@@ -43,10 +43,11 @@ class _HomeViewState extends State<HomeView> {
         appBar: CustomAppBar(),
         drawer: CustomAppDrawer(),
         // if we need to add drawer in the right
-        // endDrawer: JimAppDrawer(),
         bottomNavigationBar: NavigationBottomBar(
             currentIndex: tabIndex, onChangeIndex: _handleChangeIndex),
         body: Container(
+          //  color: Colors.black,
+
           child: bottomBarPages[tabIndex],
         ));
   }

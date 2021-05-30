@@ -12,7 +12,7 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
+  //TODO populate le user  pour les prefs
   @override
   void initState() {
     super.initState();
@@ -25,6 +25,7 @@ class _SplashViewState extends State<SplashView> {
 
   Widget build(BuildContext context) {
     return Scaffold(
+          backgroundColor: Color(0xff101519),
       body: LoadingAnnimation()
     );
   }
