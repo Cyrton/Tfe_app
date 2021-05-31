@@ -7,6 +7,8 @@ import 'package:carcassonne/views/city/city_view.dart';
 import 'package:carcassonne/views/city/city_info_view.dart';
 import 'package:carcassonne/views/calendar/calendar_view.dart';
 import 'package:carcassonne/views/place/place_view.dart';
+import 'package:carcassonne/views/meet/meet_view.dart';
+import 'package:carcassonne/views/meet/one_meet_view.dart';
 
 class AppRouter {
   static FluroRouter router = FluroRouter();
@@ -43,6 +45,22 @@ class AppRouter {
      return CustomCalendarView();
   });
 
+  static Handler _meetHandler =
+  Handler(handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+        FirebaseAnalytics().setCurrentScreen(screenName: context.settings.name);
+     return MeetView();
+  });
+  
+  static Handler _oneMeetHandler = 
+   Handler(handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+        FirebaseAnalytics().setCurrentScreen(screenName: context.settings.name);
+    final args = context.settings.arguments as Map<String, dynamic>;
+   
+    final String meetId = args != null ? args['meetId'] : null;
+
+     return OneMeetView(meetId: meetId);
+  });
+
   static Handler _homeHandler =
       Handler(handlerFunc: (BuildContext context, Map<String, dynamic> params) {
     FirebaseAnalytics().setCurrentScreen(screenName: context.settings.name);
@@ -56,5 +74,7 @@ class AppRouter {
     router.define('city/info', handler: _cityInfoHandler);
     router.define('place', handler: _placeHandler);
     router.define('calendar', handler: _calendarHandler);
+    router.define('meet', handler: _meetHandler);
+    router.define('meet/one', handler: _oneMeetHandler);
   }
 }
