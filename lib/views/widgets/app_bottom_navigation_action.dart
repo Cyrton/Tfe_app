@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/app_flat_button.dart';
+import 'package:oppidum/views/widgets/app_flat_button.dart';
 
 class AppBottomNavigationAction extends StatelessWidget
 implements PreferredSizeWidget {
@@ -18,6 +18,8 @@ implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+      color: Color(0xff101519),
+          
           border: Border(
               top: BorderSide(
         color: Colors.grey,
@@ -28,7 +30,7 @@ implements PreferredSizeWidget {
       child: CustomFlatButton(
         loading: loading,
         width: 200,
-        loadingColor: Colors.white,
+        loadingColor: Color(0xfff6ac65),
         color: Colors.white,
         textColor: Colors.black,
         onPressed: onPressed,

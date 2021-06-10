@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/app_flat_button.dart';
-import 'package:carcassonne/views/widgets/app_inkwell.dart';
+import 'package:oppidum/views/widgets/app_flat_button.dart';
+import 'package:oppidum/views/widgets/app_inkwell.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:carcassonne/views/widgets/input_text.dart';
+import 'package:oppidum/views/widgets/input_text.dart';
+import 'package:oppidum/net/city_api.dart';
 
 class AddCityWidget extends StatefulWidget {
   final Function onValidate;
@@ -17,21 +18,42 @@ class AddCityWidget extends StatefulWidget {
 }
 
 class _AddCityWidgetState extends State<AddCityWidget> {
+  String cityName;
+  String cityRole;
+  String email;
+
   void _handleChange(String type, String value) {
-    print('$type $value');
+    if (type == 'cityName') {
+      setState(() {
+              cityName = value;
+            });
+    }
+
+     if (type == 'cityRole') {
+      setState(() {
+              cityRole = value;
+            });
+    }
+
+     if (type == 'email') {
+      setState(() {
+              email = value;
+            });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return  Container(
         color: Color(0xff101519),
         height: 500,
         child: SingleChildScrollView(
-            child: Column(children: [
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Column(children: [
                   Container(
                   margin: EdgeInsets.only(top: 20, bottom: 20),
                   child: Text(
-                    'Formulaire de contact',
+                    FlutterI18n.translate(context, "common.add_city_widget.contactForm"),
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
@@ -43,7 +65,7 @@ class _AddCityWidgetState extends State<AddCityWidget> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.grey)),
             child: InputText(
-              placeholder: 'Nom de la ville',
+              placeholder: FlutterI18n.translate(context, "common.add_city_widget.placeHolderNameCity"),
               border: false,
               onChange: (value) => _handleChange('cityName', value),
             ),
@@ -56,9 +78,9 @@ class _AddCityWidgetState extends State<AddCityWidget> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.grey)),
             child: InputText(
-              placeholder: 'Rôle dans la ville',
+              placeholder: FlutterI18n.translate(context, "common.add_city_widget.placeHolderRoleCity"),
               border: false,
-              onChange: (value) => _handleChange('cityJob', value),
+              onChange: (value) => _handleChange('cityRole', value),
             ),
           ),
           Container(
@@ -69,17 +91,23 @@ class _AddCityWidgetState extends State<AddCityWidget> {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.grey)),
             child: InputText(
-              placeholder: 'Email de contact',
+              placeholder: FlutterI18n.translate(context, "common.add_city_widget.placeHolderEmail"),
               border: false,
-              onChange: (value) => _handleChange('contactEmail', value),
+              onChange: (value) => _handleChange('email', value),
             ),
           ),
           CustomFlatButton(
-            label: 'Envoyer',
+            label: FlutterI18n.translate(context, "common.add_city_widget.buttonSend"),
             textColor: Colors.black,
             color: Colors.white,
             onPressed: () {
               Navigator.pop(context);
+              OppidumCityApi.requestNewCity(
+              cityName,
+              cityRole,
+              email
+              );
+
               widget.onValidate();
             },
             width: 300,

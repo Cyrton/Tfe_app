@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/google_login_button.dart';
+import 'package:oppidum/views/widgets/google_login_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:carcassonne/models/user_model.dart';
+import 'package:oppidum/models/user_model.dart';
 import 'package:provider/provider.dart';
-import 'package:carcassonne/router.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:oppidum/router.dart';
 
 class AuthWidget extends StatefulWidget {
   final Function onValidate;
@@ -61,7 +62,7 @@ class _AuthWidgetState extends State<AuthWidget> {
             child: Column(children: [
           Container(
             margin: EdgeInsets.only(top: 10, bottom: 10),
-            child: Text('Connexion',
+            child: Text(FlutterI18n.translate(context, "common.common_word.connect"),
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

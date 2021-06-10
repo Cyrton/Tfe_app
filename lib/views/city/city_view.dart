@@ -1,18 +1,20 @@
-import 'dart:convert';
-import 'package:carcassonne/models/city_model.dart';
+import 'package:oppidum/models/city_model.dart';
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/app_bottom_navigation_action.dart';
-import 'package:carcassonne/views/widgets/app_bar.dart';
-import 'package:carcassonne/router.dart';
+import 'package:oppidum/views/widgets/app_bottom_navigation_action.dart';
+import 'package:oppidum/views/widgets/search_bar.dart';
+import 'package:oppidum/router.dart';
 import 'package:fluro/fluro.dart';
-import 'package:carcassonne/net/city_api.dart';
-import 'package:carcassonne/views/widgets/loading_widget.dart';
-import 'package:carcassonne/views/city/widgets/add_city_widget.dart';
+import 'package:oppidum/net/city_api.dart';
+import 'package:oppidum/views/widgets/loading_widget.dart';
+import 'package:oppidum/views/city/widgets/add_city_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:flutter_search_bar/flutter_search_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 
 Widget renderCityCard(context, city) {
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
   return (Container(
     height: 150,
     // margin: EdgeInsets.all(10),
@@ -27,7 +29,13 @@ Widget renderCityCard(context, city) {
     ),
 
     child: InkWell(
-        onTap: () {
+        onTap: () async {
+          final SharedPreferences prefs = await _prefs;
+
+             prefs.setString('cityId', city['_id']);
+             prefs.setString('cityUrl', city['image']['url']);
+             prefs.setString('cityName', city['name']);
+          
           var cityModel = Provider.of<CityModel>(context, listen: false);
           cityModel.setCityBasicInfo(
               city['_id'], city['image']['url'], city['name']);
@@ -83,18 +91,10 @@ class CityView extends StatefulWidget {
 }
 
 class _CityViewState extends State<CityView> {
-  SearchBar searchBar;
   String searchName = '';
   List<dynamic> _allCity = null;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  AppBar buildAppBar(BuildContext context) {
-    return new AppBar(
-        backgroundColor: Color(0xff101519),
-        title: new Text('Trouver une ville'),
-        actions: [searchBar.getSearchAction(context)]);
-  }
 
   void onSubmitted(String value) {
     setState(() {
@@ -105,7 +105,7 @@ class _CityViewState extends State<CityView> {
   }
 
   void fetchCities() async {
-    var data = await CarcassonneCityApi.getAllCity(searchName);
+    var data = await OppidumCityApi.getAllCity(searchName);
 
     if (mounted) {
       setState(() {
@@ -115,7 +115,7 @@ class _CityViewState extends State<CityView> {
   }
 
   Future<String> refetchCities() async {
-    var data = await CarcassonneCityApi.getAllCity(searchName);
+    var data = await OppidumCityApi.getAllCity(searchName);
 
     if (mounted) {
       setState(() {
@@ -124,26 +124,6 @@ class _CityViewState extends State<CityView> {
       return 'success';
     }
     return 'success';
-  }
-
-  _CityViewState() {
-    searchBar = new SearchBar(
-        inBar: false,
-        closeOnSubmit: false,
-        clearOnSubmit: false,
-        buildDefaultAppBar: buildAppBar,
-        setState: setState,
-        onChanged: onSubmitted,
-        onCleared: () {
-           setState(() {
-            searchName = '';
-            _allCity = null;
-          });
-          fetchCities();
-        },
-        onClosed: () {
-          print("closed");
-        });
   }
 
   @override
@@ -159,9 +139,9 @@ class _CityViewState extends State<CityView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Demande reçue", style: TextStyle(color: Colors.white)),
+          title: Text(FlutterI18n.translate(context, "common.city_view.validContact"), style: TextStyle(color: Colors.white)),
           content: Text(
-              "Merci pour votre demande, nous vous contacterons dans le plus rapidement possible.",
+              FlutterI18n.translate(context, "common.city_view.thanksMessage"),
               style: TextStyle(color: Colors.white)),
           actions: [
             FlatButton(
@@ -178,9 +158,9 @@ class _CityViewState extends State<CityView> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Color(0xff101519),
-        appBar: searchBar.build(context),
+        appBar: CustomSearchBar(onChange: onSubmitted),
         bottomNavigationBar: AppBottomNavigationAction(
-            title: 'Ajouter ma ville',
+            title: FlutterI18n.translate(context, "common.city_view.addMyCity"),
             loading: false,
             onPressed: () {
               showMaterialModalBottomSheet(
@@ -189,6 +169,7 @@ class _CityViewState extends State<CityView> {
                 expand: false,
                 builder: (context) => AddCityWidget(
                   onValidate: () {
+                    
                     _showDialog(context);
                   },
                 ),
@@ -205,7 +186,7 @@ class _CityViewState extends State<CityView> {
                 Container(
                     alignment: Alignment.center,
                     margin: EdgeInsets.only(top: 50),
-                    child: Text('No data',
+                    child: Text(FlutterI18n.translate(context, "common.common_word.noData"),
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/place_card.dart';
+import 'package:oppidum/views/widgets/place_card.dart';
 import 'package:fluro/fluro.dart';
-import 'package:carcassonne/net/place_api.dart';
-import 'package:carcassonne/views/widgets/loading_widget.dart';
-import 'package:carcassonne/router.dart';
-import 'package:carcassonne/models/city_model.dart';
+import 'package:oppidum/net/place_api.dart';
+import 'package:oppidum/views/widgets/loading_widget.dart';
+import 'package:oppidum/router.dart';
+import 'package:oppidum/models/city_model.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+
 
 class TourismeView extends StatefulWidget {
   final bool showReminder;
@@ -29,7 +31,7 @@ class _TourismeViewState extends State<TourismeView> {
     var cityModel = Provider.of<CityModel>(context, listen: false);
 
     var places =
-        await CarcassonnePlaceApi.getPlaceByType('tourism', cityModel.id);
+        await OppidumPlaceApi.getPlaceByType('tourism', cityModel.id);
     if (mounted) {
       setState(() {
         _places = places;
@@ -41,7 +43,7 @@ class _TourismeViewState extends State<TourismeView> {
     var cityModel = Provider.of<CityModel>(context, listen: false);
 
     var places =
-        await CarcassonnePlaceApi.getPlaceByType('tourism', cityModel.id);
+        await OppidumPlaceApi.getPlaceByType('tourism', cityModel.id);
     if (mounted) {
       setState(() {
         _places = places;
@@ -77,7 +79,7 @@ class _TourismeViewState extends State<TourismeView> {
               Container(
                   alignment: Alignment.center,
                   margin: EdgeInsets.only(top: 50),
-                  child: Text('No data',
+                  child: Text(FlutterI18n.translate(context, "common.common_word.noData"),
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

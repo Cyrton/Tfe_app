@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:carcassonne/net/client.dart';
+import 'package:oppidum/net/client.dart';
 
-class CarcassonneCityApi {
-  static Dio _client = createCarcassonneDioClient();
+class OppidumCityApi {
+  static Dio _client = createOppidumDioClient();
 
   static Future<List<dynamic>> getAllCity(String searchName) async {
     var res = await _client.get('cities',
@@ -30,4 +30,19 @@ class CarcassonneCityApi {
     print(res.data);
     return res.data;
   }
+
+   static Future<List<dynamic>> requestNewCity(String cityName, String cityRole, String email) async {
+    var res = await _client.post(
+      'ask-contacts',
+      data: {
+        "cityName": cityName,
+        "cityRole": cityRole,
+        "email": email,
+        },
+    );
+    print(res.data);
+    return res.data;
+  }
+
+  
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:carcassonne/views/widgets/app_bar.dart';
+import 'package:oppidum/views/widgets/app_bar.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:carcassonne/views/widgets/app_inkwell.dart';
+import 'package:oppidum/views/widgets/app_inkwell.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:carcassonne/net/city_api.dart';
+import 'package:oppidum/net/city_api.dart';
 import 'package:provider/provider.dart';
-import 'package:carcassonne/models/city_model.dart';
-import 'package:carcassonne/views/widgets/loading_widget.dart';
+import 'package:oppidum/models/city_model.dart';
+import 'package:oppidum/views/widgets/loading_widget.dart';
 
 
 class CityInfoView extends StatefulWidget {
@@ -32,8 +32,7 @@ class _CityInfoViewState extends State<CityInfoView> {
         loading = true;
       });
     }
-    var citie = await CarcassonneCityApi.getCitieById(cityModel.id);
-    print('Citie =>$citie');
+    var citie = await OppidumCityApi.getCitieById(cityModel.id);
     if (mounted) {
       setState(() {
         _citie = citie;
@@ -101,13 +100,17 @@ class _CityInfoViewState extends State<CityInfoView> {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(_citie['address'],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontStyle: FontStyle.italic,
-                                      fontSize: 14)),
+                               Container(
+                                          width: 300,
+                                          child:
+                                        Text(_citie['address'],
+                                            textAlign: TextAlign.center,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 14))),
                               Container(
                                 alignment: Alignment.topLeft,
                                 child: Icon(Icons.location_on,

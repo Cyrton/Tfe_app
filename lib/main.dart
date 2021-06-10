@@ -1,9 +1,9 @@
-import 'package:carcassonne/app_config.dart';
-import 'package:carcassonne/router.dart';
+import 'package:oppidum/app_config.dart';
+import 'package:oppidum/router.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carcassonne/models/user_model.dart';
+import 'package:oppidum/models/user_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,8 +13,7 @@ import 'dart:io';
 import 'package:intl/intl.dart'; //for date format
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
-import 'package:carcassonne/models/city_model.dart';
-
+import 'package:oppidum/models/city_model.dart';
 
 void main(List<String> args, {String env}) async {
 //Remove this method to stop OneSignal Debugging
@@ -42,12 +41,11 @@ void main(List<String> args, {String env}) async {
     appRunner: () => runApp(MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-             ChangeNotifierProvider(create: (context) => CityModel()),
+        ChangeNotifierProvider(create: (context) => CityModel()),
       ],
       child: MyApp(flutterI18nDelegate),
     )),
   );
-
 }
 
 class MyApp extends StatelessWidget {
@@ -55,8 +53,7 @@ class MyApp extends StatelessWidget {
   MyApp(this.flutterI18nDelegate);
   static FirebaseAnalytics analytics = FirebaseAnalytics();
   static FirebaseAnalyticsObserver observer =
-  FirebaseAnalyticsObserver(analytics: analytics);
-
+      FirebaseAnalyticsObserver(analytics: analytics);
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +64,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         navigatorObservers: <NavigatorObserver>[observer],
         color: Color.fromARGB(255, 255, 255, 255),
-        title: 'Carcassonne',
+        title: 'Oppidum',
         initialRoute: 'splash',
         theme: ThemeData(
             textTheme:
-              GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)),
+                GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)),
         // GoogleFonts.barlowTextTheme(Theme.of(context).textTheme)),
         // GoogleFonts.ptSansTextTheme(Theme.of(context).textTheme)),
         // GoogleFonts.gorditasTextTheme(Theme.of(context).textTheme)),
